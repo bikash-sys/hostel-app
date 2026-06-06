@@ -55,7 +55,7 @@ const SCREEN_OPTIONS = {
   headerStyle: { backgroundColor: Colors.surface, shadowColor: 'transparent', elevation: 0, borderBottomWidth: 0 },
   headerTintColor: Colors.text,
   headerTitleStyle: { fontWeight: '700', fontSize: 17 },
-  cardStyle: { backgroundColor: Colors.background },
+  cardStyle: { backgroundColor: Colors.background, flex: 1 },
 };
 
 export default function App() {
@@ -118,104 +118,106 @@ export default function App() {
   }
 
   return (
-    <NavigationContainer theme={NAV_THEME}>
-      <Stack.Navigator screenOptions={SCREEN_OPTIONS}>
-        {!user ? (
-          // Auth Flow
-          <Stack.Screen name="Auth" options={{ headerShown: false }}>
-            {(props) => <AuthScreen {...props} onAuthSuccess={handleAuthSuccess} />}
-          </Stack.Screen>
-        ) : userRole === 'manager' || userRole === 'admin' ? (
-          // Manager Flow
-          <>
-            <Stack.Screen
-              name="ManagerHome"
-              options={{
-                title: 'Manager Portal',
-                headerRight: () => (
-                  <LogoutButton onPress={handleLogout} />
-                ),
-              }}
-            >
-              {(props) => <ManagerHomeScreen {...props} user={user} />}
+    <View style={{ flex: 1 }}>
+      <NavigationContainer theme={NAV_THEME}>
+        <Stack.Navigator screenOptions={SCREEN_OPTIONS}>
+          {!user ? (
+            // Auth Flow
+            <Stack.Screen name="Auth" options={{ headerShown: false }}>
+              {(props) => <AuthScreen {...props} onAuthSuccess={handleAuthSuccess} />}
             </Stack.Screen>
-            <Stack.Screen
-              name="ManagerLaundry"
-              options={{ title: '🫧 Laundry Manager' }}
-              component={ManagerLaundryScreen}
-            />
-            <Stack.Screen
-              name="ManagerServices"
-              options={{ title: '✨ Housekeeping Manager' }}
-              component={ManagerServicesScreen}
-            />
-            <Stack.Screen
-              name="ManagerMenu"
-              options={{ title: '🍽️ Mess Menu Editor' }}
-              component={ManagerMenuScreen}
-            />
-            <Stack.Screen
-              name="ManagerComplaints"
-              options={{ title: '📋 Student Complaints' }}
-              component={ManagerComplaintsScreen}
-            />
-            <Stack.Screen
-              name="WifiTest"
-              options={{ title: '📶 WiFi Diagnostics' }}
-              component={WifiTestScreen}
-            />
-          </>
-        ) : (
-          // Student Flow
-          <>
-            <Stack.Screen
-              name="StudentHome"
-              options={{
-                title: 'DormDesk',
-                headerRight: () => (
-                  <LogoutButton onPress={handleLogout} />
-                ),
-              }}
-            >
-              {(props) => <StudentHomeScreen {...props} user={user} />}
-            </Stack.Screen>
-            <Stack.Screen
-              name="Laundry"
-              options={{ title: '🫧 Laundry Service' }}
-            >
-              {(props) => <LaundryScreen {...props} user={user} />}
-            </Stack.Screen>
-            <Stack.Screen
-              name="Housekeeping"
-              options={{ title: '✨ Housekeeping' }}
-            >
-              {(props) => <HousekeepingScreen {...props} user={user} />}
-            </Stack.Screen>
-            <Stack.Screen
-              name="Menu"
-              options={{ title: "🍽️ Today's Menu" }}
-              component={MenuScreen}
-            />
-            <Stack.Screen
-              name="Complaints"
-              options={{ title: '📋 My Complaints' }}
-            >
-              {(props) => <ComplaintsScreen {...props} user={user} />}
-            </Stack.Screen>
-            <Stack.Screen
-              name="Payments"
-              options={{ title: '💳 Payments' }}
-              component={PaymentsScreen}
-            />
-            <Stack.Screen
-              name="WifiTest"
-              options={{ title: '📶 WiFi Speed Test' }}
-              component={WifiTestScreen}
-            />
-          </>
-        )}
-      </Stack.Navigator>
-    </NavigationContainer>
+          ) : userRole === 'manager' || userRole === 'admin' ? (
+            // Manager Flow
+            <>
+              <Stack.Screen
+                name="ManagerHome"
+                options={{
+                  title: 'Manager Portal',
+                  headerRight: () => (
+                    <LogoutButton onPress={handleLogout} />
+                  ),
+                }}
+              >
+                {(props) => <ManagerHomeScreen {...props} user={user} />}
+              </Stack.Screen>
+              <Stack.Screen
+                name="ManagerLaundry"
+                options={{ title: '🫧 Laundry Manager' }}
+                component={ManagerLaundryScreen}
+              />
+              <Stack.Screen
+                name="ManagerServices"
+                options={{ title: '✨ Housekeeping Manager' }}
+                component={ManagerServicesScreen}
+              />
+              <Stack.Screen
+                name="ManagerMenu"
+                options={{ title: '🍽️ Mess Menu Editor' }}
+                component={ManagerMenuScreen}
+              />
+              <Stack.Screen
+                name="ManagerComplaints"
+                options={{ title: '📋 Student Complaints' }}
+                component={ManagerComplaintsScreen}
+              />
+              <Stack.Screen
+                name="WifiTest"
+                options={{ title: '📶 WiFi Diagnostics' }}
+                component={WifiTestScreen}
+              />
+            </>
+          ) : (
+            // Student Flow
+            <>
+              <Stack.Screen
+                name="StudentHome"
+                options={{
+                  title: 'DormDesk',
+                  headerRight: () => (
+                    <LogoutButton onPress={handleLogout} />
+                  ),
+                }}
+              >
+                {(props) => <StudentHomeScreen {...props} user={user} />}
+              </Stack.Screen>
+              <Stack.Screen
+                name="Laundry"
+                options={{ title: '🫧 Laundry Service' }}
+              >
+                {(props) => <LaundryScreen {...props} user={user} />}
+              </Stack.Screen>
+              <Stack.Screen
+                name="Housekeeping"
+                options={{ title: '✨ Housekeeping' }}
+              >
+                {(props) => <HousekeepingScreen {...props} user={user} />}
+              </Stack.Screen>
+              <Stack.Screen
+                name="Menu"
+                options={{ title: "🍽️ Today's Menu" }}
+                component={MenuScreen}
+              />
+              <Stack.Screen
+                name="Complaints"
+                options={{ title: '📋 My Complaints' }}
+              >
+                {(props) => <ComplaintsScreen {...props} user={user} />}
+              </Stack.Screen>
+              <Stack.Screen
+                name="Payments"
+                options={{ title: '💳 Payments' }}
+                component={PaymentsScreen}
+              />
+              <Stack.Screen
+                name="WifiTest"
+                options={{ title: '📶 WiFi Speed Test' }}
+                component={WifiTestScreen}
+              />
+            </>
+          )}
+        </Stack.Navigator>
+      </NavigationContainer>
+    </View>
   );
 }
 
