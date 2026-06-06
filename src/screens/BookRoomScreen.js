@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -60,6 +60,18 @@ export default function BookRoomScreen({ user, navigation }) {
   const [selectedRoom, setSelectedRoom] = useState(null);
   const [checkIn, setCheckIn] = useState(formatDate(new Date()));
   const [submitting, setSubmitting] = useState(false);
+  const [booked, setBooked] = useState(false);
+  const [bookedRoom, setBookedRoom] = useState(null);
+
+  // Auto-redirect 2.5s after booking success
+  useEffect(() => {
+    if (booked) {
+      const timer = setTimeout(() => {
+        navigation.navigate('StudentHome');
+      }, 2500);
+      return () => clearTimeout(timer);
+    }
+  }, [booked]);
 
   const handleBook = async () => {
     if (!guestName.trim()) {
@@ -103,16 +115,9 @@ export default function BookRoomScreen({ user, navigation }) {
         booking_id: bookingId,
       });
 
-      Alert.alert(
-        '🎉 Booking Confirmed!',
-        `Your ${selectedRoom.label} has been booked.\n\nBooking ID: ${bookingId}\nCheck-in: ${checkIn}\n\nA confirmation email has been sent to ${user.email}.`,
-        [
-          {
-            text: 'Go to Dashboard',
-            onPress: () => navigation.navigate('StudentHome'),
-          },
-        ]
-      );
+      // Show in-screen success and auto-redirect
+      setBookedRoom({ ...selectedRoom, bookingId });
+      setBooked(true);
     } catch (e) {
       console.error('Booking error:', e);
       Alert.alert('Error', 'Something went wrong. Please try again.');
@@ -120,6 +125,30 @@ export default function BookRoomScreen({ user, navigation }) {
       setSubmitting(false);
     }
   };
+
+  // ── Success screen ──────────────────────────────────────────────────────────
+  if (booked && bookedRoom) {
+    return (
+      <View style={styles.successContainer}>
+        <View style={styles.successIconWrap}>
+          <Text style={{ fontSize: 52 }}>🎉</Text>
+        </View>
+        <Text style={styles.successTitle}>Room Booked!</Text>
+        <Text style={styles.successSub}>
+          Your <Text style={{ color: bookedRoom.color, fontWeight: '700' }}>{bookedRoom.label}</Text> has been confirmed.
+        </Text>
+        <View style={styles.successDetail}>
+          <Text style={styles.successDetailText}>🆔 {bookedRoom.bookingId}</Text>
+          <Text style={styles.successDetailText}>📅 Check-in: {checkIn}</Text>
+          <Text style={styles.successDetailText}>📧 Confirmation sent to {user.email}</Text>
+        </View>
+        <View style={styles.successRedirectRow}>
+          <ActivityIndicator color={Colors.primary} size="small" style={{ marginRight: 8 }} />
+          <Text style={styles.successRedirectText}>Redirecting to your portal…</Text>
+        </View>
+      </View>
+    );
+  }
 
   return (
     <ScrollView
@@ -362,4 +391,38 @@ const styles = StyleSheet.create({
     padding: Spacing.md, borderWidth: 1, borderColor: Colors.border,
   },
   infoNoteText: { fontSize: 12, color: Colors.textMuted, lineHeight: 18, textAlign: 'center' },
+
+  // Success Screen
+  successContainer: {
+    flex: 1, backgroundColor: Colors.background,
+    alignItems: 'center', justifyContent: 'center',
+    padding: Spacing.xl,
+  },
+  successIconWrap: {
+    width: 110, height: 110, borderRadius: 32,
+    backgroundColor: Colors.green + '18',
+    alignItems: 'center', justifyContent: 'center',
+    marginBottom: 24, borderWidth: 1.5, borderColor: Colors.green + '40',
+  },
+  successTitle: {
+    fontSize: 30, fontWeight: '800', color: Colors.text, marginBottom: 10,
+  },
+  successSub: {
+    fontSize: 15, color: Colors.textMuted, textAlign: 'center',
+    lineHeight: 22, marginBottom: 28,
+  },
+  successDetail: {
+    backgroundColor: Colors.surface, borderRadius: BorderRadius.xl,
+    borderWidth: 1, borderColor: Colors.border,
+    padding: Spacing.lg, width: '100%', marginBottom: 28, gap: 12,
+  },
+  successDetailText: {
+    fontSize: 14, color: Colors.text, fontWeight: '500', lineHeight: 20,
+  },
+  successRedirectRow: {
+    flexDirection: 'row', alignItems: 'center',
+  },
+  successRedirectText: {
+    fontSize: 13, color: Colors.textMuted, fontStyle: 'italic',
+  },
 });
