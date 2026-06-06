@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
-  View, Text, ScrollView, StyleSheet, TouchableOpacity,
+  View, Text, ScrollView, StyleSheet, TouchableOpacity, Alert,
   RefreshControl, ActivityIndicator,
 } from 'react-native';
 import { getBookings, getMessMenu, getLaundryRequests, getRoomServices } from '../supabase';
@@ -47,7 +47,8 @@ export default function StudentHomeScreen({ user, navigation }) {
     setRefreshing(false);
   };
 
-  const activeBooking = bookings[0];
+  const activeBooking = bookings.find(b => b.status === 'booked') || null;
+  const isBooked = !!activeBooking;
   const roomName = activeBooking?.roomName || activeBooking?.room_name || 'Not Booked';
   const studentName = activeBooking?.guest_name?.split(' ')[0] || user?.email?.split('@')[0] || 'Student';
   const activeLaundry = laundries.filter(l => l.status === 'pending').length;
@@ -88,14 +89,40 @@ export default function StudentHomeScreen({ user, navigation }) {
         <View style={styles.bannerLeft}>
           <Text style={styles.greeting}>Good {hour < 12 ? 'Morning' : hour < 17 ? 'Afternoon' : 'Evening'} 👋</Text>
           <Text style={styles.studentName}>{studentName}</Text>
-          <View style={styles.roomBadge}>
-            <Text style={styles.roomBadgeText}>🏠 {roomName}</Text>
-          </View>
+          {isBooked ? (
+            <View style={styles.roomBadge}>
+              <Text style={styles.roomBadgeText}>🏠 {roomName}</Text>
+            </View>
+          ) : (
+            <View style={[styles.roomBadge, styles.roomBadgeWarning]}>
+              <Text style={[styles.roomBadgeText, { color: Colors.amber }]}>⚠️ No Active Booking</Text>
+            </View>
+          )}
         </View>
         <View style={styles.avatarCircle}>
           <Text style={styles.avatarText}>{user?.email?.[0]?.toUpperCase() || 'S'}</Text>
         </View>
       </View>
+
+      {/* Book Room Banner (shown when not booked) */}
+      {!isBooked && (
+        <TouchableOpacity
+          style={styles.bookRoomBanner}
+          onPress={() => navigation.navigate('BookRoom')}
+          activeOpacity={0.85}
+        >
+          <View style={styles.bookRoomBannerLeft}>
+            <Text style={styles.bookRoomBannerEmoji}>🏠</Text>
+            <View>
+              <Text style={styles.bookRoomBannerTitle}>Book Your Room</Text>
+              <Text style={styles.bookRoomBannerSub}>Secure your hostel accommodation now</Text>
+            </View>
+          </View>
+          <View style={styles.bookRoomBannerArrow}>
+            <Text style={{ color: Colors.primary, fontSize: 18, fontWeight: '700' }}>→</Text>
+          </View>
+        </TouchableOpacity>
+      )}
 
       {/* Stats Grid */}
       <Text style={styles.sectionTitle}>Quick Overview</Text>
@@ -123,27 +150,45 @@ export default function StudentHomeScreen({ user, navigation }) {
 
       {/* Quick Actions */}
       <Text style={styles.sectionTitle}>Quick Actions</Text>
+      {!isBooked && (
+        <View style={styles.warningNote}>
+          <Text style={styles.warningNoteText}>⚠️ Book a room first to access hostel services</Text>
+        </View>
+      )}
       <View style={styles.actionsGrid}>
         {[
-          { label: 'Laundry', emoji: '🫧', screen: 'Laundry', color: Colors.blue },
-          { label: 'Housekeeping', emoji: '✨', screen: 'Housekeeping', color: Colors.purple },
-          { label: 'Mess Menu', emoji: '🍽️', screen: 'Menu', color: Colors.amber },
-          { label: 'Complaints', emoji: '📋', screen: 'Complaints', color: Colors.red },
-          { label: 'Wifi Test', emoji: '📶', screen: 'WifiTest', color: Colors.indigo },
-          { label: 'Payments', emoji: '💳', screen: 'Payments', color: Colors.green },
-        ].map((action) => (
-          <TouchableOpacity
-            key={action.screen}
-            style={[styles.actionCard, { borderColor: action.color + '30' }]}
-            onPress={() => navigation.navigate(action.screen)}
-            activeOpacity={0.75}
-          >
-            <View style={[styles.actionIcon, { backgroundColor: action.color + '18' }]}>
-              <Text style={styles.actionEmoji}>{action.emoji}</Text>
-            </View>
-            <Text style={styles.actionLabel}>{action.label}</Text>
-          </TouchableOpacity>
-        ))}
+          { label: 'Laundry', emoji: '🫧', screen: 'Laundry', color: Colors.blue, requiresBooking: true },
+          { label: 'Housekeeping', emoji: '✨', screen: 'Housekeeping', color: Colors.purple, requiresBooking: true },
+          { label: 'Mess Menu', emoji: '🍽️', screen: 'Menu', color: Colors.amber, requiresBooking: false },
+          { label: 'Complaints', emoji: '📋', screen: 'Complaints', color: Colors.red, requiresBooking: true },
+          { label: 'Wifi Test', emoji: '📶', screen: 'WifiTest', color: Colors.indigo, requiresBooking: false },
+          { label: 'Payments', emoji: '💳', screen: 'Payments', color: Colors.green, requiresBooking: false },
+        ].map((action) => {
+          const locked = action.requiresBooking && !isBooked;
+          return (
+            <TouchableOpacity
+              key={action.screen}
+              style={[styles.actionCard, { borderColor: action.color + '30', opacity: locked ? 0.45 : 1 }]}
+              onPress={() => {
+                if (locked) {
+                  Alert.alert('Room Required', 'Please book a room first to access this service.', [
+                    { text: 'Book Room', onPress: () => navigation.navigate('BookRoom') },
+                    { text: 'Cancel', style: 'cancel' },
+                  ]);
+                } else {
+                  navigation.navigate(action.screen);
+                }
+              }}
+              activeOpacity={0.75}
+            >
+              <View style={[styles.actionIcon, { backgroundColor: action.color + '18' }]}>
+                <Text style={styles.actionEmoji}>{action.emoji}</Text>
+              </View>
+              <Text style={styles.actionLabel}>{action.label}</Text>
+              {locked && <Text style={{ fontSize: 9, color: Colors.textMuted, marginTop: 2 }}>🔒 Book first</Text>}
+            </TouchableOpacity>
+          );
+        })}
       </View>
 
       {/* Recent Laundry */}
@@ -178,7 +223,7 @@ const styles = StyleSheet.create({
   banner: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     backgroundColor: Colors.surface, borderRadius: BorderRadius.xl,
-    padding: Spacing.lg, marginBottom: Spacing.lg,
+    padding: Spacing.lg, marginBottom: Spacing.md,
     borderWidth: 1, borderColor: Colors.border,
   },
   bannerLeft: { flex: 1 },
@@ -189,6 +234,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12, paddingVertical: 4, alignSelf: 'flex-start',
     borderWidth: 1, borderColor: Colors.primary + '30',
   },
+  roomBadgeWarning: {
+    backgroundColor: Colors.amber + '18', borderColor: Colors.amber + '30',
+  },
   roomBadgeText: { color: Colors.primary, fontSize: 12, fontWeight: '600' },
   avatarCircle: {
     width: 52, height: 52, borderRadius: 26,
@@ -196,6 +244,32 @@ const styles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
   },
   avatarText: { color: '#fff', fontSize: 22, fontWeight: '700' },
+
+  // Book Room Banner
+  bookRoomBanner: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    backgroundColor: Colors.primary + '14',
+    borderRadius: BorderRadius.xl, padding: Spacing.lg,
+    marginBottom: Spacing.md, borderWidth: 1.5, borderColor: Colors.primary + '40',
+  },
+  bookRoomBannerLeft: { flexDirection: 'row', alignItems: 'center', gap: 14, flex: 1 },
+  bookRoomBannerEmoji: { fontSize: 30 },
+  bookRoomBannerTitle: { fontSize: 16, fontWeight: '800', color: Colors.text, marginBottom: 2 },
+  bookRoomBannerSub: { fontSize: 12, color: Colors.textMuted },
+  bookRoomBannerArrow: {
+    width: 36, height: 36, borderRadius: 18,
+    backgroundColor: Colors.primary + '20',
+    alignItems: 'center', justifyContent: 'center',
+  },
+
+  // Warning
+  warningNote: {
+    backgroundColor: Colors.amber + '12', borderRadius: BorderRadius.md,
+    padding: Spacing.sm, marginBottom: Spacing.sm,
+    borderWidth: 1, borderColor: Colors.amber + '30',
+  },
+  warningNoteText: { fontSize: 12, color: Colors.amber, fontWeight: '600', textAlign: 'center' },
+
   sectionTitle: { fontSize: 16, fontWeight: '700', color: Colors.text, marginBottom: Spacing.sm, marginTop: Spacing.md },
   statsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: Spacing.md },
   statCard: {

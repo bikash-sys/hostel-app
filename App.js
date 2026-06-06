@@ -8,6 +8,7 @@ import { Colors } from './src/theme';
 
 // Screens
 import AuthScreen from './src/screens/AuthScreen';
+import BookRoomScreen from './src/screens/BookRoomScreen';
 
 // Student Screens
 import StudentHomeScreen from './src/screens/StudentHomeScreen';
@@ -28,7 +29,7 @@ import ManagerComplaintsScreen from './src/screens/ManagerComplaintsScreen';
 const Stack = createStackNavigator();
 
 // Hardcoded admin/manager emails (same as web app)
-const ADMIN_EMAILS = ['admin@dormdesk.com'];
+const ADMIN_EMAILS = ['admin@dormdesk.com', 'bikjha2007@gmail.com'];
 const MANAGER_EMAILS = ['manager@dormdesk.com', 'hostelmanager@nst.edu'];
 
 function getRole(email, dbRole) {
@@ -213,6 +214,12 @@ export default function App() {
                 options={{ title: '📶 WiFi Speed Test' }}
                 component={WifiTestScreen}
               />
+              <Stack.Screen
+                name="BookRoom"
+                options={{ title: '🏠 Book Your Room' }}
+              >
+                {(props) => <BookRoomScreen {...props} user={user} />}
+              </Stack.Screen>
             </>
           )}
         </Stack.Navigator>

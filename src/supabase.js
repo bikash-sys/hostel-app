@@ -191,6 +191,38 @@ export async function addBooking(booking) {
   }
 }
 
+// ─── EmailJS ──────────────────────────────────────────────────────────────────
+export async function sendBookingEmail({ to_email, guest_name, room_name, check_in, booking_id }) {
+  try {
+    const templateParams = {
+      to_email,
+      guest_name,
+      room_name,
+      check_in,
+      booking_id,
+    };
+    const res = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        service_id: 'service_lduq7np',
+        template_id: 'template_6w6ox5i',
+        user_id: 'WBEyamB5OZk4Fvh55',
+        template_params: templateParams,
+      }),
+    });
+    if (!res.ok) {
+      const text = await res.text();
+      console.error('EmailJS error:', text);
+      return false;
+    }
+    return true;
+  } catch (e) {
+    console.error('sendBookingEmail error:', e);
+    return false;
+  }
+}
+
 // ─── Complaints ────────────────────────────────────────────────────────────────
 export async function addComplaint(complaint) {
   try {
