@@ -4,21 +4,15 @@
     "slug": "dormdesk",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/favicon.png",
     "userInterfaceStyle": "dark",
-    "newArchEnabled": true,
-    "splash": {
-      "image": "./assets/splash-icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#0F0F1A"
-    },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.dormdesk.app"
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/favicon.png",
         "backgroundColor": "#0F0F1A"
       },
       "package": "com.dormdesk.app"
@@ -26,6 +20,12 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "plugins": []
+    "plugins": [],
+    "extra": {
+      "eas": {
+        "projectId": "5ae7438a-5e22-4871-aba6-a643180af301"
+      }
+    },
+    "owner": "bikash2_007"
   }
 }
